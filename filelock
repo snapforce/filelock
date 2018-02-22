@@ -16,7 +16,7 @@ usage () {
     echo
     echo "####################################################################"
     echo "#                                                                  #"
-    echo "# Usage: filelock. { encrypt | decrypt } <filename>                #"
+    echo "# Usage: filelock { encrypt | decrypt } <filename>                 #"
     echo "#                                                                  #"
     echo "# mode 'encrypt': pass as mode when you wish to encrypt a file.    #"
     echo "# mode 'decrypt': pass as mode when you wish to decrypt a file.    #"
