@@ -1,0 +1,62 @@
+#!/bin/bash
+
+MODE=$1
+FILENAME_OLD="${2#./}"
+if [[ "${2}" =~ ^.?/?encrypted_.*$ ]]; then
+    FILENAME_NEW="${2#./encrypted_}"
+    FILENAME_NEW="${FILENAME_NEW#encrypted_}"
+elif [[ "${2}" =~ ^.?/?decrypted_.*$ ]]; then
+    FILENAME_NEW="${2#./decrypted_}"
+    FILENAME_NEW="${FILENAME_NEW#decrypted_}"
+else
+    FILENAME_NEW=$FILENAME_OLD
+fi
+
+usage () {
+    echo
+    echo "####################################################################"
+    echo "#                                                                  #"
+    echo "# Usage: file_lock.sh { encrypt | decrypt } <filename>             #"
+    echo "#                                                                  #"
+    echo "# mode 'encrypt': pass as mode when you wish to encrypt a file.    #"
+    echo "# mode 'decrypt': pass as mode when you wish to decrypt a file.    #"
+    echo "# help '-h': pass as the sole argument to see this banner.         #"
+    echo "#                                                                  #"
+    echo "####################################################################"
+    echo
+    return 0;
+}
+
+cleanup () {
+    if [[ -e $1 ]] && [[ -e $2 ]]; then
+        rm $1
+    fi
+}
+
+if [ ! "$MODE" = "encrypt" ] && [ ! "$MODE" = "decrypt" ]; then
+    usage
+    exit 0
+elif [[ "$MODE" = "-h" ]]; then
+    usage
+    exit 0
+fi
+
+if [ -d $FILENAME_OLD ]; then
+    echo "Checking ${FILENAME_OLD} [BAD]"
+    echo "${FILENAME_OLD} is a directory"
+elif [[ ! -e $FILENAME_OLD ]]; then
+    echo "CHECKING ${FILENAME_OLD} [BAD]"
+    echo "${FILENAME_OLD} does not exist, or cannot be used"
+else
+    if [ "$MODE" = "encrypt" ]; then
+        # run encryption algo
+        openssl enc -aes-256-cbc -in $FILENAME_OLD -out "encrypted_${FILENAME_NEW}"
+        # erase unencrypted version
+        cleanup $FILENAME_OLD "encrypted_${FILENAME_NEW}"
+    elif [[ "$MODE" = "decrypt" ]]; then
+        # run decryption algo
+        openssl enc -aes-256-cbc -d -in $FILENAME_OLD > "decrypted_${FILENAME_NEW}"
+        # erase encrypted version
+        cleanup $FILENAME_OLD "decrypted_${FILENAME_NEW}"
+    fi
+fi
